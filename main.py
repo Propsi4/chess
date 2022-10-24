@@ -17,14 +17,15 @@ class App(QMainWindow):
 	def __init__(self):
 		super(App, self).__init__()
 		uic.loadUi('main.ui', self) # Імпорт граф. дизайну
+
 		self.old_row = 0
 		self.old_column = 0
 		self.old_text = ''
 		self.show() # Show the GUI
 		self.prepare()
-
-
+		self.calculate()
 	def setImage(self, row, col, text):
+		# Добавити іконку фігури в клітинку
 		if (text.__contains__("П")):
 			if (text.__contains__("1")):
 				path = 'resized_sprites/wp.png'
@@ -60,6 +61,7 @@ class App(QMainWindow):
 		image = ImageWidget(path, self.board)
 		self.board.setCellWidget(row, col, image)
 	def remImage(self, row, col):
+		# Видалити іконку фігури з клітинки
 		self.board.setCellWidget(row, col, None)
 	def prepare(self):
 		# Виконується тільки один раз, підготовка таблиці і тд
@@ -83,10 +85,42 @@ class App(QMainWindow):
 					self.board.item(i, k).setForeground(QColor("#ffffff"))
 		self.reset()
 		self.board.itemChanged.connect(self.change)
+	def calculate(self):
+		self.black = []
+		self.white = []
+		self.black_count = 0
+		self.white_count = 0
+		for i in range(8):
+			for k in range(8):
+				if(self.board.item(i,k).text().__contains__("1")):
+					self.white.append(f'{i}/{k}')
+					if(self.get_figure(i,k)=="П1"):
+						self.white_count += 1
+					elif (self.get_figure(i, k) == "С1" or self.get_figure(i, k) == "Кі1"):
+						self.white_count += 3
+					elif (self.get_figure(i, k) == 'Т1'):
+						self.white_count += 5
+					elif (self.get_figure(i,k) == "Ф1"):
+						self.white_count += 9
+				elif(self.board.item(i,k).text().__contains__("2")):
+					self.black.append(f'{i}/{k}')
+					if(self.get_figure(i,k)=="П2"):
+						self.black_count += 1
+					elif (self.get_figure(i, k) == "С2" or self.get_figure(i, k) ==  "Кі2"):
+						self.black_count += 3
+					elif (self.get_figure(i, k) == 'Т2'):
+						self.black_count += 5
+					elif (self.get_figure(i,k) == "Ф2"):
+						self.black_count += 9
+		self.calc_label.setText(f'Ціна білих:{self.white_count}\n'
+		                        f'Ціна чорних:{self.black_count}')
+	def get_figure(self,row,column):
+		return self.board.item(row,column).text()
 	def change(self):
 		# Перевірка введеної користувачем назви фігури на правильність написання
 		row, column = self.current_cell()
 		text = self.board.item(row,column).text()
+		self.calculate()
 		if(text not in allowed):
 			self.board.item(row,column).setText('')
 			self.remImage(row, column)
@@ -131,9 +165,6 @@ class App(QMainWindow):
 			for k in range(8):
 				text = self.board.item(i,k).text()
 				self.setImage(i,k,text)
-
-
-
 	def current_cell(self):
 		row = self.board.currentRow()
 		column = self.board.currentColumn()
@@ -144,7 +175,6 @@ class App(QMainWindow):
 		self.board.item(to_row,to_column).setText(figure)
 		# Переміщення картинки
 		self.remImage(from_row,from_column)
-
 	def selected(self):
 		# Допоміжна функція move
 		row, column = self.current_cell()
@@ -159,6 +189,7 @@ class App(QMainWindow):
 		self.old_column = column
 		self.old_text = text
 def excepthook(exc_type, exc_value, exc_tb):
+	# На випадок, якщо програма крашнеться, зберігає код помилки у файл
     tb = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
     print("error catched!:")
     print("error message:\n", tb)
