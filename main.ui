@@ -53,7 +53,7 @@
       <x>0</x>
       <y>0</y>
       <width>500</width>
-      <height>490</height>
+      <height>505</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -65,13 +65,13 @@
     <property name="minimumSize">
      <size>
       <width>500</width>
-      <height>490</height>
+      <height>505</height>
      </size>
     </property>
     <property name="maximumSize">
      <size>
       <width>500</width>
-      <height>490</height>
+      <height>505</height>
      </size>
     </property>
     <property name="font">
@@ -252,7 +252,7 @@
    <widget class="QPushButton" name="reset_button">
     <property name="geometry">
      <rect>
-      <x>200</x>
+      <x>150</x>
       <y>530</y>
       <width>81</width>
       <height>41</height>
@@ -351,6 +351,7 @@
     </property>
     <property name="font">
      <font>
+      <family>Arial Black</family>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -368,14 +369,15 @@
    <widget class="QCheckBox" name="edit_button">
     <property name="geometry">
      <rect>
-      <x>290</x>
+      <x>240</x>
       <y>530</y>
-      <width>81</width>
-      <height>41</height>
+      <width>51</width>
+      <height>21</height>
      </rect>
     </property>
     <property name="font">
      <font>
+      <family>Arial Black</family>
       <weight>75</weight>
       <bold>true</bold>
      </font>
@@ -388,6 +390,40 @@
     </property>
     <property name="text">
      <string>Edit</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>290</x>
+      <y>530</y>
+      <width>121</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial Black</family>
+      <pointsize>7</pointsize>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::Box</enum>
+    </property>
+    <property name="text">
+     <string>Доступні назви:Кр1,Кр2,Ф1,
+Ф2,С1,С2,Кі1,Кі2,Т1,Т2</string>
+    </property>
+    <property name="scaledContents">
+     <bool>true</bool>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+    </property>
+    <property name="wordWrap">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>
