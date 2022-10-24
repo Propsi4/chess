@@ -154,6 +154,7 @@ class App(QMainWindow):
 		if(self.edit_button.isChecked()):
 			self.remImage(row,column)
 			self.board.item(row,column).setText('')
+			text = ''
 		self.old_row = row
 		self.old_column = column
 		self.old_text = text
