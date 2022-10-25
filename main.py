@@ -169,18 +169,35 @@ class App(QMainWindow):
 		row = self.board.currentRow()
 		column = self.board.currentColumn()
 		return row, column
-	def move(self,to_row,to_column,from_row,from_column,figure):
-		# Рух фігури
-		self.board.item(from_row,from_column).setText('')
-		self.board.item(to_row,to_column).setText(figure)
-		# Переміщення картинки
-		self.remImage(from_row,from_column)
+	def move(self,to_row,to_column,from_row,from_column):
+		move_allowed = False
+
+		figure = self.get_figure(from_row,from_column)
+		if(figure == "П1" and from_row-to_row <= 2 and from_row-to_row>0 and from_column==to_column):
+			if(from_row-to_row == 2):
+				if(from_row == 6):
+					move_allowed = True
+			elif(from_row-to_row == 1):
+				move_allowed = True
+		elif(figure == "П2" and from_row-to_row >= -2 and from_row-to_row<0 and from_column==to_column):
+			if(from_row-to_row == -2):
+				if(from_row == 1):
+					move_allowed = True
+			elif(from_row-to_row == -1):
+				move_allowed = True
+
+		if(move_allowed == True):
+			# Рух фігури
+			self.board.item(from_row, from_column).setText('')
+			self.board.item(to_row, to_column).setText(figure)
+			# Переміщення картинки
+			self.remImage(from_row, from_column)
 	def selected(self):
 		# Допоміжна функція move
 		row, column = self.current_cell()
 		text = self.board.item(row,column).text()
 		if (self.old_text != text and text == "" and not self.edit_button.isChecked()):
-			self.move(row, column, self.old_row, self.old_column, self.old_text)
+			self.move(row, column, self.old_row, self.old_column)
 		if(self.edit_button.isChecked()):
 			self.remImage(row,column)
 			self.board.item(row,column).setText('')
