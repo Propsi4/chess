@@ -4,6 +4,8 @@ from PyQt6.QtWidgets import QApplication, QTableWidgetItem,QMainWindow,QTableWid
 from PyQt6.QtGui import QColor, QPainter, QPixmap
 import sys, traceback
 allowed = ('П1','Т1','Кі1','С1','Ф1','Кр1','П2','Т2','Кі2','С2','Ф2','Кр2')
+horse_moves_x = (2,2, -2,-2, 1,-1, 1,-1)
+horse_moves_y = (1,-1, 1,-1, -2,-2, 2,2)
 class ImageWidget(QWidget):
 
     def __init__(self, imagePath, parent):
@@ -17,13 +19,16 @@ class App(QMainWindow):
 	def __init__(self):
 		super(App, self).__init__()
 		uic.loadUi('main.ui', self) # Імпорт граф. дизайну
-
+		self.edit_mode = False
+		self.old_selection_allowed = False
+		self.allowed_moves = []
 		self.old_row = 0
 		self.old_column = 0
 		self.old_text = ''
 		self.show() # Show the GUI
 		self.prepare()
 		self.calculate()
+
 	def setImage(self, row, col, text):
 		# Добавити іконку фігури в клітинку
 		if (text.__contains__("П")):
@@ -67,7 +72,7 @@ class App(QMainWindow):
 		# Виконується тільки один раз, підготовка таблиці і тд
 		self.board.cellClicked.connect(self.selected)
 		self.reset_button.clicked.connect(self.reset)
-		self.edit_button.clicked.connect(self.edit_mode)
+		self.edit_button.clicked.connect(self.edit)
 		self.board.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 		for i in range(8):
 			self.board.setColumnWidth(i,59)
@@ -75,25 +80,16 @@ class App(QMainWindow):
 			for k in range(8):
 				item = QTableWidgetItem()
 				item.setTextAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
-				self.board.setItem(i,k,item)
-				if((k+i)%2!=0):
-					self.board.item(i,k).setBackground(QColor("#000000"))
-					self.board.item(i,k).setForeground(QColor("#000000"))
-
-				else:
-					self.board.item(i, k).setBackground(QColor("#ffffff"))
-					self.board.item(i, k).setForeground(QColor("#ffffff"))
+				self.board.setItem(i, k, item)
+		self.clear_ways()
 		self.reset()
 		self.board.itemChanged.connect(self.change)
 	def calculate(self):
-		self.black = []
-		self.white = []
 		self.black_count = 0
 		self.white_count = 0
 		for i in range(8):
 			for k in range(8):
 				if(self.board.item(i,k).text().__contains__("1")):
-					self.white.append(f'{i}/{k}')
 					if(self.get_figure(i,k)=="П1"):
 						self.white_count += 1
 					elif (self.get_figure(i, k) == "С1" or self.get_figure(i, k) == "Кі1"):
@@ -103,7 +99,6 @@ class App(QMainWindow):
 					elif (self.get_figure(i,k) == "Ф1"):
 						self.white_count += 9
 				elif(self.board.item(i,k).text().__contains__("2")):
-					self.black.append(f'{i}/{k}')
 					if(self.get_figure(i,k)=="П2"):
 						self.black_count += 1
 					elif (self.get_figure(i, k) == "С2" or self.get_figure(i, k) ==  "Кі2"):
@@ -114,6 +109,16 @@ class App(QMainWindow):
 						self.black_count += 9
 		self.calc_label.setText(f'Ціна білих:{self.white_count}\n'
 		                        f'Ціна чорних:{self.black_count}')
+	def clear_ways(self):
+		for i in range(8):
+			for k in range(8):
+				if ((k + i) % 2 != 0):
+					self.board.item(i, k).setBackground(QColor("#000000"))
+					self.board.item(i, k).setForeground(QColor("#000000"))
+
+				else:
+					self.board.item(i, k).setBackground(QColor("#ffffff"))
+					self.board.item(i, k).setForeground(QColor("#ffffff"))
 	def get_figure(self,row,column):
 		return self.board.item(row,column).text()
 	def change(self):
@@ -127,14 +132,19 @@ class App(QMainWindow):
 		else:
 			self.board.item(row, column).setText(text)
 			self.setImage(row, column, text)
-	def edit_mode(self):
+	def edit(self):
 		# Режим ручного введення кліток
 		if(self.edit_button.isChecked()):
+			self.edit_mode = True
 			self.board.setEditTriggers(QTableWidget.EditTrigger.AllEditTriggers)
 		else:
+			self.edit_mode = False
 			self.board.setEditTriggers(QTableWidget.EditTrigger.NoEditTriggers)
 	def reset(self):
 		# Очистка поля
+		self.clear_ways()
+		self.end_label.hide()
+		self.end.hide()
 		for i in range(8):
 			for k in range(8):
 				self.board.item(i,k).setText('')
@@ -170,38 +180,94 @@ class App(QMainWindow):
 		column = self.board.currentColumn()
 		return row, column
 	def move(self,to_row,to_column,from_row,from_column):
-		move_allowed = False
-
 		figure = self.get_figure(from_row,from_column)
-		if(figure == "П1" and from_row-to_row <= 2 and from_row-to_row>0 and from_column==to_column):
-			if(from_row-to_row == 2):
-				if(from_row == 6):
-					move_allowed = True
-			elif(from_row-to_row == 1):
-				move_allowed = True
-		elif(figure == "П2" and from_row-to_row >= -2 and from_row-to_row<0 and from_column==to_column):
-			if(from_row-to_row == -2):
-				if(from_row == 1):
-					move_allowed = True
-			elif(from_row-to_row == -1):
-				move_allowed = True
-
-		if(move_allowed == True):
-			# Рух фігури
-			self.board.item(from_row, from_column).setText('')
-			self.board.item(to_row, to_column).setText(figure)
-			# Переміщення картинки
-			self.remImage(from_row, from_column)
+		# Рух фігури
+		self.board.item(from_row, from_column).setText('')
+		self.board.item(to_row, to_column).setText(figure)
+		# Переміщення картинки
+		self.remImage(from_row, from_column)
+	def get_team(self,text):
+		if(text.__contains__("1")):
+			return 1
+		elif(text.__contains__("2")):
+			return 2
+		else:
+			return None
 	def selected(self):
 		# Допоміжна функція move
+
+		allowed_moves = []
+		selection_allowed = False
 		row, column = self.current_cell()
+		self.clear_ways()
 		text = self.board.item(row,column).text()
-		if (self.old_text != text and text == "" and not self.edit_button.isChecked()):
-			self.move(row, column, self.old_row, self.old_column)
-		if(self.edit_button.isChecked()):
+		#print(text + ' => ' + self.old_text)
+		# print(str(row)+"|"+str(column), self.get_figure(row,column))
+		if(self.old_text!='' and text != '' and self.get_team(self.old_text)!=self.get_team(text)):
+			if((str(row)+'|'+str(column) in self.allowed_moves)):
+				self.move(row, column, self.old_row, self.old_column)
+				if(text.__contains__("Кр")):
+					if(self.get_team(text) == 1):
+						self.end_label.setText('Чорні перемогли')
+					else:
+						self.end_label.setText('Білі перемогли')
+
+					self.end_label.show()
+					self.end.show()
+					# self.reset()
+			return
+		if(self.edit_mode == False):
+			if (text.__contains__("Кі")):
+				for i in range(8):
+					try:
+						selection_allowed = True
+						possible_way = self.board.item(row + horse_moves_x[i], column + horse_moves_y[i])
+						if (possible_way.text() == "" or self.get_team(
+								self.board.item(row, column).text()) != self.get_team(possible_way.text())):
+							allowed_moves.append(str(row + horse_moves_x[i]) + '|' + str(column + horse_moves_y[i]))
+							possible_way.setBackground(QColor("#515151"))
+					except:
+						pass
+			elif (text == "П1"):
+				try:
+					if (self.get_figure(row - 1, column) == ""):
+						selection_allowed = True
+						if (row == 6 and self.get_figure(row - 2, column) == ""):
+							for i in range(1, 3):
+								self.board.item(row - i,
+								                column).setBackground(QColor("#515151"))
+								allowed_moves.append(str(row - i) + '|' + str(column))
+
+						else:
+							allowed_moves.append(str(row - 1) + '|' + str(column))
+							self.board.item(row - 1, column).setBackground(QColor("#515151"))
+				except:
+					pass
+			elif (text == "П2"):
+				try:
+					if (self.get_figure(row + 1, column) == ""):
+						selection_allowed = True
+						if (row == 1 and self.get_figure(row + 2, column) == ""):
+							for i in range(1, 3):
+								self.board.item(row + i,
+								                column).setBackground(QColor("#515151"))
+								allowed_moves.append(str(row + i) + '|' + str(column))
+						else:
+							allowed_moves.append(str(row + 1) + '|' + str(column))
+							self.board.item(row + 1, column).setBackground(QColor("#515151"))
+				except:
+					pass
+			# print(self.allowed_moves)
+			if (str(row)+'|'+str(column) in self.allowed_moves and self.old_selection_allowed == True and self.get_team(self.old_text) != self.get_team(
+					text)):
+				self.move(row, column, self.old_row, self.old_column)
+		else:
 			self.remImage(row,column)
 			self.board.item(row,column).setText('')
 			text = ''
+		self.killed = False
+		self.allowed_moves = allowed_moves
+		self.old_selection_allowed = selection_allowed
 		self.old_row = row
 		self.old_column = column
 		self.old_text = text
