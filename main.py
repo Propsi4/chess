@@ -201,7 +201,7 @@ class App(QMainWindow):
 		row, column = self.current_cell()
 		self.clear_ways()
 		text = self.board.item(row,column).text()
-		#print(text + ' => ' + self.old_text)
+		# print(text + ' => ' + self.old_text)
 		# print(str(row)+"|"+str(column), self.get_figure(row,column))
 		if(self.old_text!='' and text != '' and self.get_team(self.old_text)!=self.get_team(text)):
 			if((str(row)+'|'+str(column) in self.allowed_moves)):
