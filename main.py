@@ -11,11 +11,9 @@ horse_moves_y = (1,-1, 1,-1, -2,-2, 2,2)
 king_moves_x = (1,1,1,0,0,-1,-1,-1)
 king_moves_y = (-1,0,1,-1,1,-1,0,1)
 class ImageWidget(QWidget):
-
-    def __init__(self, imagePath, parent):
-        super(ImageWidget, self).__init__(parent)
-        self.picture = QPixmap(imagePath)
-
+	def __init__(self, imagePath, parent):
+		super(ImageWidget, self).__init__(parent)
+		self.picture = QPixmap(imagePath)
 	def paintEvent(self, event):
 		painter = QPainter(self)
 		painter.drawPixmap(0, 0, self.picture)
